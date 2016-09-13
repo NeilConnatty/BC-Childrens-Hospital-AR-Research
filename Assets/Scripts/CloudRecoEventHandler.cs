@@ -1,11 +1,12 @@
-/*===============================================================================
+/*==============================================================================
 Copyright (c) 2015-2016 PTC Inc. All Rights Reserved.
- 
-Copyright (c) 2012-2015 Qualcomm Connected Experiences, Inc. All Rights Reserved.
- 
+
+Copyright (c) 2012-2015 Qualcomm Connected Experiences, Inc.
+All Rights Reserved.
+
 Vuforia is a trademark of PTC Inc., registered in the United States and other 
-countries.
-===============================================================================*/
+countries.  
+==============================================================================*/
 using System;
 using UnityEngine;
 using Vuforia;
@@ -18,18 +19,20 @@ using Vuforia;
 public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
 {
     #region PRIVATE_MEMBERS
+    // CloudRecoBehaviour reference to avoid lookups
+    private CloudRecoBehaviour mCloudRecoBehaviour;
     // ObjectTracker reference to avoid lookups
     private ObjectTracker mObjectTracker;
+    // reference to the cloud reco scene manager component:
     private ContentManager mContentManager;
-    private TrackableSettings mTrackableSettings;
-    private bool mMustRestartApp = false;
 
     // the parent gameobject of the referenced ImageTargetTemplate - reused for all target search results
     private GameObject mParentOfImageTargetTemplate;
+    private bool mMustRestartApp = false;
     #endregion // PRIVATE_MEMBERS
 
 
-    #region PUBLIC_MEMBERS
+    #region PUBLIC_VARIABLES
     /// <summary>
     /// Can be set in the Unity inspector to reference a ImageTargetBehaviour that is used for augmentations of new cloud reco results.
     /// </summary>
@@ -39,62 +42,36 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
     /// </summary>
     public ScanLine scanLine;
     /// <summary>
-    /// Cloud Reco error UI elements.
+    /// Reference to UI Canvas to show Cloud Reco errors.
     /// </summary>
     public Canvas cloudErrorCanvas;
     public UnityEngine.UI.Text cloudErrorTitle;
     public UnityEngine.UI.Text cloudErrorText;
-    #endregion //PUBLIC_MEMBERS
+    public UnityEngine.UI.RawImage requestingMsgImage;
+    #endregion //PUBLIC_VARIABLES
 
 
-    #region MONOBEHAVIOUR_METHODS
+    #region ICloudRecoEventHandler_IMPLEMENTATION
     /// <summary>
-    /// register for events at the CloudRecoBehaviour
-    /// </summary>
-    void Start()
-    {
-        mTrackableSettings = FindObjectOfType<TrackableSettings>();
-
-        // look up the gameobject containing the ImageTargetTemplate:
-        mParentOfImageTargetTemplate = ImageTargetTemplate.gameObject;
-
-        // register this event handler at the cloud reco behaviour
-        CloudRecoBehaviour cloudRecoBehaviour = GetComponent<CloudRecoBehaviour>();
-        if (cloudRecoBehaviour)
-        {
-            cloudRecoBehaviour.RegisterEventHandler(this);
-        }
-    }
-    #endregion //MONOBEHAVIOUR_METHODS
-
-
-    #region ICloudRecoEventHandler_implementation
-    /// <summary>
-    /// Called when TargetFinder has been initialized successfully
+    /// called when TargetFinder has been initialized successfully
     /// </summary>
     public void OnInitialized()
     {
-        Debug.Log("Cloud Reco initialized successfully.");
-
         // get a reference to the Object Tracker, remember it
         mObjectTracker = TrackerManager.Instance.GetTracker<ObjectTracker>();
         mContentManager = FindObjectOfType<ContentManager>();
     }
 
     /// <summary>
-    /// Called if Cloud Reco initialization fails
+    /// visualize initialization errors
     /// </summary>
     public void OnInitError(TargetFinder.InitState initError)
     {
-        Debug.Log("Cloud Reco initialization error: " + initError.ToString());
         switch (initError)
         {
             case TargetFinder.InitState.INIT_ERROR_NO_NETWORK_CONNECTION:
-                {
-                    mMustRestartApp = true;
-                    ShowError("Network Unavailable", "Please check your internet connection and try again.");
-                    break;
-                }
+                ShowError("Network Unavailable", "Please check your internet connection and try again.");
+                break;
             case TargetFinder.InitState.INIT_ERROR_SERVICE_NOT_AVAILABLE:
                 ShowError("Service Unavailable", "Failed to initialize app because the service is not available.");
                 break;
@@ -102,11 +79,10 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
     }
     
     /// <summary>
-    /// Called if a Cloud Reco update error occurs
+    /// visualize update errors
     /// </summary>
     public void OnUpdateError(TargetFinder.UpdateState updateError)
     {
-        Debug.Log("Cloud Reco update error: " + updateError.ToString());
         switch (updateError)
         {
             case TargetFinder.UpdateState.UPDATE_ERROR_AUTHORIZATION_FAILED:
@@ -144,7 +120,7 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
             mObjectTracker.TargetFinder.ClearTrackables(false);
 
             // hide the ImageTargetTemplate
-            mContentManager.ShowObject(false);
+            mContentManager.HideObject();
         }
 
         ShowScanLine(scanning);
@@ -163,26 +139,64 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
         // Vuforia will return a new object with the right script automatically if you use
         // TargetFinder.EnableTracking(TargetSearchResult result, string gameObjectName)
         
-        //Check if the metadata isn't null
+        // Check if the metadata isn't null
         if (targetSearchResult.MetaData == null)
         {
-            Debug.Log("Target metadata not available.");
             return;
         }
 
-        // First clear all trackables
-        mObjectTracker.TargetFinder.ClearTrackables(false);
-
-        // enable the new result with the same ImageTargetBehaviour:
+        // Enable the new result with the same ImageTargetBehaviour:
         ImageTargetBehaviour imageTargetBehaviour = mObjectTracker.TargetFinder.EnableTracking(targetSearchResult, mParentOfImageTargetTemplate) as ImageTargetBehaviour;
-        
-        //if extended tracking was enabled from the menu, we need to start the extendedtracking on the newly found trackble.
-        if (mTrackableSettings && mTrackableSettings.IsExtendedTrackingEnabled())
+
+        if (imageTargetBehaviour != null)
         {
-            imageTargetBehaviour.ImageTarget.StartExtendedTracking();
+            // Stop the target finder
+            mCloudRecoBehaviour.CloudRecoEnabled = false;
+
+            // Stop showing the scan-line
+            ShowScanLine(false);
+            
+            // Calls the TargetCreated Method of the SceneManager object to start loading
+            // the BookData from the JSON
+            mContentManager.TargetCreated(targetSearchResult.MetaData);
+            mContentManager.AnimationsManager.SetInitialAnimationFlags();
         }
     }
-    #endregion //ICloudRecoEventHandler_implementation
+    #endregion // ICloudRecoEventHandler_IMPLEMENTATION
+
+
+    #region MONOBEHAVIOUR_METHODS
+    /// <summary>
+    /// Register for events at the CloudRecoBehaviour
+    /// </summary>
+    void Start()
+    {
+        // Look up the gameobject containing the ImageTargetTemplate:
+        mParentOfImageTargetTemplate = ImageTargetTemplate.gameObject;
+
+        // Register this event handler at the cloud reco behaviour
+        CloudRecoBehaviour cloudRecoBehaviour = GetComponent<CloudRecoBehaviour>();
+        if (cloudRecoBehaviour)
+        {
+            cloudRecoBehaviour.RegisterEventHandler(this);
+        }
+
+        // Remember cloudRecoBehaviour for later
+        mCloudRecoBehaviour = cloudRecoBehaviour;
+
+        // At start we hide the requesting message panel
+        SetRequestingMessageVisible(false);
+    }
+
+    void Update()
+    {
+        if (mCloudRecoBehaviour.CloudRecoInitialized)
+        {
+            // Show/hide the requesting message panel
+            SetRequestingMessageVisible(mObjectTracker.TargetFinder.IsRequesting());
+        }
+    }
+    #endregion //MONOBEHAVIOUR_METHODS
 
 
     #region PUBLIC_METHODS
@@ -196,12 +210,13 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
 
             if (mMustRestartApp)
             {
-				mMustRestartApp = false;
+                mMustRestartApp = false;
                 RestartApplication();
             }
         }
     }
     #endregion //PUBLIC_METHODS
+
 
     #region PRIVATE_METHODS
     private void ShowScanLine(bool show)
@@ -227,6 +242,14 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
         }
     }
 
+    private void SetRequestingMessageVisible(bool visible)
+    {
+        if (!requestingMsgImage) return;
+
+        if (visible != requestingMsgImage.enabled)
+            requestingMsgImage.enabled = visible;
+    }
+
     private void ShowError(string title, string msg)
     {
         if (!cloudErrorCanvas) return;
@@ -243,9 +266,10 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
         cloudErrorCanvas.enabled = true;
     }
 
-    // Callback for network-not-available error message
+    // Error Handling Callback that gets called when the application is not connected to the internet
     private void RestartApplication()
     {
+        //Restarts the app
 #if (UNITY_5_2 || UNITY_5_1 || UNITY_5_0)
         int startLevel = Application.loadedLevel - 2;
         if (startLevel < 0) startLevel = 0;
@@ -256,5 +280,5 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
         UnityEngine.SceneManagement.SceneManager.LoadScene(startLevel);
 #endif
     }
-    #endregion //PRIVATE_METHODS
+    #endregion // PRIVATE_METHODS
 }

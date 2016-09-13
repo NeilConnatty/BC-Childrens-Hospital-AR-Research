@@ -46,7 +46,9 @@ public class CloudRecoEventHandlerEditor : Editor
         creh.cloudErrorText = (UnityEngine.UI.Text)EditorGUILayout.ObjectField("Cloud Reco Error Text",
                                                     creh.cloudErrorText, typeof(UnityEngine.UI.Text), true);
 
-
+        creh.requestingMsgImage = (UnityEngine.UI.RawImage)EditorGUILayout.ObjectField("Requesting Message Box",
+                                                    creh.requestingMsgImage, typeof(UnityEngine.UI.RawImage), true);
+        
         if (GUI.changed)
             EditorUtility.SetDirty(creh);
     }

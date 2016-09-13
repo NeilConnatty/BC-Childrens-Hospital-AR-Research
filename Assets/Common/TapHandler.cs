@@ -1,9 +1,9 @@
 /*===============================================================================
 Copyright (c) 2015-2016 PTC Inc. All Rights Reserved.
- 
+
 Copyright (c) 2015 Qualcomm Connected Experiences, Inc. All Rights Reserved.
- 
-Vuforia is a trademark of PTC Inc., registered in the United States and other 
+
+Vuforia is a trademark of PTC Inc., registered in the United States and other
 countries.
 ===============================================================================*/
 using UnityEngine;
@@ -24,14 +24,14 @@ public class TapHandler : MonoBehaviour
 
 
     #region MONOBEHAVIOUR_METHODS
-    void Start() 
+    void Start()
     {
         mTapCount = 0;
         mTimeSinceLastTap = 0;
         mMenuAnim = FindObjectOfType<MenuAnimator>();
     }
 
-    void Update() 
+    void Update()
     {
         if (mMenuAnim && mMenuAnim.IsVisible())
         {
@@ -48,7 +48,7 @@ public class TapHandler : MonoBehaviour
         if (Input.GetKeyUp(KeyCode.Escape))
         {
 #if (UNITY_5_2 || UNITY_5_1 || UNITY_5_0)
-            Application.LoadLevel("Vuforia-1-About");   
+            Application.LoadLevel("Vuforia-1-About");
 #else // UNITY_5_3 or above
             UnityEngine.SceneManagement.SceneManager.LoadScene("Vuforia-1-About");
 #endif
@@ -66,7 +66,7 @@ public class TapHandler : MonoBehaviour
             mTimeSinceLastTap += Time.deltaTime;
             if (mTimeSinceLastTap > DOUBLE_TAP_MAX_DELAY)
             {
-                // too late for double tap, 
+                // too late for double tap,
                 // we confirm it was a single tap
                 OnSingleTapConfirmed();
 
@@ -85,7 +85,7 @@ public class TapHandler : MonoBehaviour
             mTapCount = 0;
         }
 
-        if (Input.GetMouseButtonUp(0))
+        if (Input.GetMouseButtonUp(0) || Input.GetButtonUp ("Submit"))
         {
             mTapCount++;
             if (mTapCount == 1)

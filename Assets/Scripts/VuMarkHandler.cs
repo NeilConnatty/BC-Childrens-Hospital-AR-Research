@@ -2,7 +2,7 @@
 Copyright (c) 2016 PTC Inc. All Rights Reserved.
 
 Confidential and Proprietary - Protected under copyright and other laws.
-Vuforia is a trademark of PTC Inc., registered in the United States and other 
+Vuforia is a trademark of PTC Inc., registered in the United States and other
 countries.
 ===============================================================================*/
 using System.Collections.Generic;
@@ -43,6 +43,7 @@ public class VuMarkHandler : MonoBehaviour
     void Update()
     {
         UpdateClosestTarget();
+        UpdatePanel ();
     }
 
     void OnDestroy()
@@ -54,7 +55,12 @@ public class VuMarkHandler : MonoBehaviour
 
     #endregion // UNTIY_MONOBEHAVIOUR_METHODS
 
-
+    void UpdatePanel ()
+    {
+        if (Input.GetButtonUp ("Cancel")) {
+            mIdPanel.Hide ();
+        }
+    }
 
     #region PUBLIC_METHODS
 
@@ -108,11 +114,14 @@ public class VuMarkHandler : MonoBehaviour
             var vuMarkId = GetVuMarkString(mClosestVuMark);
             var vuMarkTitle = GetVuMarkDataType(mClosestVuMark);
             var vuMarkImage = GetVuMarkImage(mClosestVuMark);
-            
+
             mCurrentVuMark = mClosestVuMark;
             mIdPanel.Hide();
             StartCoroutine(ShowPanelAfter(0.5f, vuMarkTitle, vuMarkId, vuMarkImage));
         }
+        /* for hiding panel when button clicked
+        if (Input.GetButtonUp ("Submit")) mIdPanel.Hide ();
+        */
     }
 
     private IEnumerator ShowPanelAfter(float seconds, string vuMarkTitle, string vuMarkId, Sprite vuMarkImage)
@@ -172,4 +181,3 @@ public class VuMarkHandler : MonoBehaviour
 
     #endregion // PRIVATE_METHODS
 }
-

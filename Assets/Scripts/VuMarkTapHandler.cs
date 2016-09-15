@@ -2,7 +2,7 @@
 Copyright (c) 2016 PTC Inc. All Rights Reserved.
 
 Confidential and Proprietary - Protected under copyright and other laws.
-Vuforia is a trademark of PTC Inc., registered in the United States and other 
+Vuforia is a trademark of PTC Inc., registered in the United States and other
 countries.
 ===============================================================================*/
 using UnityEngine;
@@ -29,7 +29,7 @@ public class VuMarkTapHandler : TapHandler
         // Check if we hit the vumark card panel
         if (CheckVuMarkCardHit())
         {
-            // Reset the tap count, 
+            // Reset the tap count,
             // cause the tap event is fully consumed by closing the VuMark card
             mTapCount = 0;
         }

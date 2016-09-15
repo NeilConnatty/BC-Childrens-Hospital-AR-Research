@@ -1,5 +1,5 @@
 /*============================================================================== 
- * Copyright (c) 2012-2015 Qualcomm Connected Experiences, Inc. All Rights Reserved. 
+ * Copyright (c) 2012-2015 Qualcomm Connected Experiences, Inc. All Rights Reserved.
  * ==============================================================================*/
 using UnityEngine;
 using System.Collections.Generic;
@@ -7,7 +7,7 @@ using Vuforia;
 
 /// <summary>
 /// This class implements the IVirtualButtonEventHandler interface and
-/// contains the logic to swap materials for the teapot model depending on what 
+/// contains the logic to swap materials for the teapot model depending on what
 /// virtual button has been pressed.
 /// </summary>
 public class VirtualButtonEventHandler : MonoBehaviour,

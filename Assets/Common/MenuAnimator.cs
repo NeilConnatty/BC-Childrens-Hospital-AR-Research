@@ -1,9 +1,9 @@
 ﻿/*===============================================================================
 Copyright (c) 2015-2016 PTC Inc. All Rights Reserved.
- 
+
 Copyright (c) 2015 Qualcomm Connected Experiences, Inc. All Rights Reserved.
- 
-Vuforia is a trademark of PTC Inc., registered in the United States and other 
+
+Vuforia is a trademark of PTC Inc., registered in the United States and other
 countries.
 ===============================================================================*/
 using UnityEngine;
@@ -28,7 +28,7 @@ public class MenuAnimator : MonoBehaviour
 
 
     #region MONOBEHAVIOUR_METHODS
-    void Start () 
+    void Start ()
     {
         mInvisiblePos = -Vector3.right * (2 * Screen.width);
         mVisibility = 0;
@@ -37,15 +37,15 @@ public class MenuAnimator : MonoBehaviour
         mCanvas = GetComponentInChildren<Canvas>();
         mMenuOptions = FindObjectOfType<MenuOptions>();
     }
-    
-    void Update () 
+
+    void Update ()
     {
         mInvisiblePos = -Vector3.right * Screen.width * 2;
 
         if (mVisible)
         {
             // Switch ON the UI Canvas.
-            if (!mCanvas.enabled) 
+            if (!mCanvas.enabled)
                 mCanvas.enabled = true;
 
             if (mVisibility < 1)

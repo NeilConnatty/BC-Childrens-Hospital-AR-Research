@@ -15,15 +15,15 @@ namespace Vuforia
                                                 ITrackableEventHandler
     {
         #region PRIVATE_MEMBER_VARIABLES
- 
+
         private TrackableBehaviour mTrackableBehaviour;
-    
+
         #endregion // PRIVATE_MEMBER_VARIABLES
 
 
 
         #region UNTIY_MONOBEHAVIOUR_METHODS
-    
+
         void Start()
         {
             mTrackableBehaviour = GetComponent<TrackableBehaviour>();
@@ -71,10 +71,13 @@ namespace Vuforia
             Renderer[] rendererComponents = GetComponentsInChildren<Renderer>(true);
             Collider[] colliderComponents = GetComponentsInChildren<Collider>(true);
 
+            Debug.Log ("OnTrackingFound() called");
+
             // Enable rendering:
             foreach (Renderer component in rendererComponents)
             {
                 component.enabled = true;
+                Debug.Log ("rendering on the on tracking found");
             }
 
             // Enable colliders:
